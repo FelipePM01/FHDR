@@ -18,9 +18,9 @@ class HDRDataset(Dataset):
         self.batch_size = opt.batch_size
 
         if mode == "train":
-            self.dataset_path = os.path.join("./dataset", "train")
+            self.dataset_path = os.path.join("/content/FHDR/dataset", "train")
         else:
-            self.dataset_path = os.path.join("./dataset", "test")
+            self.dataset_path = os.path.join("/content/FHDR/dataset", "test")
 
         self.ldr_data_path = os.path.join(self.dataset_path, "LDR")
         self.hdr_data_path = os.path.join(self.dataset_path, "HDR")
@@ -39,6 +39,11 @@ class HDRDataset(Dataset):
         # transformations on LDR input ->
 
         ldr_sample = Image.open(self.ldr_image_path).convert("RGB")
+
+        ldr_sample = ldr_sample.crop((0, 0, ldr_sample.size[0], ldr_sample.size[0]))
+
+        ldr_sample = ldr_sample.resize((256, 256))
+
         transform_list = [
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
@@ -53,6 +58,9 @@ class HDRDataset(Dataset):
         )
 
         hdr_sample = cv2.imread(self.hdr_image_path, -1).astype(np.float32)
+        hdr_sample[:, :hdr_sample.shape[0]]
+
+        hdr_sample = cv2.resize(hdr_sample, (256, 256), interpolation = cv2.INTER_AREA)
 
         # transforms.ToTensor() is used for 8-bit [0, 255] range images; can't be used for [0, ∞) HDR images
         transform_list = [
